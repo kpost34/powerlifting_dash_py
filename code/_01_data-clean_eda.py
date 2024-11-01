@@ -2,14 +2,13 @@
 
 # Load Libraries and Set Options====================================================================
 ## Load libraries
-# import os
 import numpy as np
 import pandas as pd
 import inflection
 import re
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import os
 
 
 
@@ -50,6 +49,10 @@ df = pd.read_csv('data/openipf_2024-10-12_filtered.csv')
 
 
 ## Functions
+root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
+os.chdir(root + 'code')
+from _00_helper_fns import make_barplot_ncomps, make_hist, make_scatter, make_boxplot
+os.chdir(root)
 
 
 
@@ -80,6 +83,7 @@ df.info()
 
 ## Missingness 
 df.isnull().sum().sort_values(ascending=False) #0 - ~2421
+#remove bench, squat, and deadlift 4--all missing
 
 
 ## Duplicates
@@ -88,6 +92,10 @@ print(df.duplicated().sum()) #no duplicate rows
 
 
 # Secondary Wrangling===============================================================================
+## Drop columns with all missing data
+df.drop(['bench4_kg', 'deadlift4_kg', 'squat4_kg'], axis=1, inplace=True)
+
+
 ## Pivot from wide to long for lifts
 #isolate columns
 cols_pivot = df.filter(regex='squat|bench|deadlift|^total_kg$').columns
@@ -138,8 +146,8 @@ lifts_cat = df_melt2['lift'].cat.categories.tolist()
 lifts_to_remove = ['best3_deadlift', 'best3_squat']
 lifts_new_cat = [cat for cat in lifts_cat if cat not in lifts_to_remove]
 
-lifts_new_cat.insert(9, 'best3_deadlift')
-lifts_new_cat.insert(14, 'best3_squat')
+lifts_new_cat.insert(7, 'best3_deadlift')
+lifts_new_cat.insert(11, 'best3_squat')
 
 #use new list as categories
 df_melt2['lift'] = df_melt2['lift'].cat.set_categories(lifts_new_cat)
@@ -197,28 +205,6 @@ plt.close()
 
 
 ### Seaborn
-#functionalize this process
-def make_barplot_ncomps(df, var, sort=False, tilt=False):
-  #build DF of counts
-  s_n = df.groupby(var)['id'].nunique()
-  
-  #sort values in descending order by n
-  if sort:
-    s_n.sort_values(ascending=False, inplace=True)
-  
-  #make barplot
-  sns.barplot(x=s_n.index, y=s_n, order=s_n.index)
-  
-  #tilt x tickmarks
-  if tilt:
-    plt.xticks(rotation=90)
-    
-  #add labels
-  plt.xlabel(var, fontsize=14)
-  plt.ylabel("Number of competitions", fontsize=14)
-  plt.show()
-  plt.close()
-
 #### event
 #hard-coded
 s_event_ids = df_melt2.groupby('event')['id'].nunique().sort_values(ascending=False)
@@ -233,8 +219,8 @@ make_barplot_ncomps(df_melt2, 'event', sort=True)
 #### year
 make_barplot_ncomps(df_melt2, 'year', sort=True)
 
-#### age_class
-make_barplot_ncomps(df_melt2, 'age_class', sort=False, tilt=True)
+#### age_class in 2022
+make_barplot_ncomps(df_melt2, 'age_class', year=2022, sort=False, tilt=True)
 
 #### equipment
 make_barplot_ncomps(df_melt2, 'equipment')
@@ -246,21 +232,6 @@ make_barplot_ncomps(df_melt2, 'federation', sort=True, tilt=True)
 ### Numerical only (univariate)--------------------
 df_melt2.info()
 #age, bodyweight_kg, mass_kg, dots, wilks, glossbrenner, goodlift
-
-#create function
-def make_hist(df, var, lift=pd.NA, col='darkblue'):
-  #convert to DF of unique records of variable
-  if var=='mass_kg':
-    df1 = df[df['lift']==lift]
-  else:
-    df1 = df[['id', var]].drop_duplicates()
-  
-  #plot histogram
-  sns.histplot(x=var, color=col, data=df1)
-  plt.xlabel(var, fontsize=14)
-  plt.ylabel('Count', fontsize=14)
-  plt.show()
-  plt.close()
 
 
 #### age
@@ -274,6 +245,7 @@ plt.close()
 
 #by function
 make_hist(df_melt2, 'age')
+make_hist(df_melt2, 'age', year=2023)
 make_hist(df_melt2, 'bodyweight_kg', col='darkred')
 make_hist(df_melt2, 'dots', col='darkgreen')
 make_hist(df_melt2, 'wilks', col='purple')
@@ -292,49 +264,6 @@ df_melt2.info()
 
 #age, bodyweight_kg, mass_kg, dots, wilks, glossbrenner, goodlift
 
-### Develop function
-def make_scatter(df, varx='mass_kg', vary='mass_kg', liftx=pd.NA, lifty=pd.NA, 
-                 pt_col='darkblue', line_col='green'):
-  #scenario 1: both vars are 'mass_kg'
-  if varx=='mass_kg' and vary=='mass_kg':
-    df1 = df[df['lift'].isin([liftx, lifty])]
-    df2 = df1[['id', 'lift', 'mass_kg']].pivot(index='id', columns='lift', values='mass_kg')
-    
-    sns.lmplot(x=liftx, y=lifty, ci=95, data=df2,
-             scatter_kws={'color': pt_col,
-                          'alpha': 0.2},
-             line_kws={'color': line_col})
-    plt.xlabel(liftx, fontsize=14)
-    plt.ylabel(lifty, fontsize=14)
-    plt.show()
-    plt.close()
-  #scenarios 2-4: either 0 or 1 var is 'mass_kg'
-  else:
-    if varx=='mass_kg':
-      df1 = df[df['lift']==liftx]
-      df2 = df1[['id', varx, vary]]
-      labx = liftx
-      laby = vary
-    elif vary=='mass_kg':
-      df1 = df[df['lift']==lifty]
-      df2 = df1[['id', varx, vary]]
-      labx = varx
-      laby = lifty
-    else:
-      df2 = df[['id', varx, vary]].drop_duplicates()
-      labx = varx
-      laby = vary
-      
-    sns.lmplot(x=varx, y=vary, ci=95, data=df2,
-               scatter_kws={'color': pt_col,
-                            'alpha': 0.2},
-               line_kws={'color': line_col})
-    plt.xlabel(labx, fontsize=14)
-    plt.ylabel(laby, fontsize=14)
-    plt.show()
-    plt.close()
-  
-
 #### Hard-coded
 #age-wilks
 df_age_wilks = df_melt2[['id', 'age', 'wilks']].drop_duplicates()
@@ -350,6 +279,7 @@ plt.close()
 
 #by function
 make_scatter(df_melt2, varx='age', vary='wilks')
+make_scatter(df_melt2, year=2024, varx='age', vary='wilks')
 make_scatter(df_melt2, varx='bodyweight_kg', vary='dots')
 
 make_scatter(df_melt2, liftx='best3_bench', lifty='best3_squat')
@@ -366,24 +296,6 @@ df_melt2.info()
 
 #numerical: age, bodyweight_kg, mass_kg, dots, wilks, glossbrenner, goodlift
 
-### Create function
-def make_boxplot(df, varx, vary='mass_kg', lifty=pd.NA):
-  if vary=='mass_kg':
-    df1 = df[df['lift']==lifty]
-    df2 = df1[['id', varx, vary]]
-    laby = lifty + '_kg'
-  else:
-    df2 = df[['id', varx, vary]].drop_duplicates()
-    laby = vary
-    
-  sns.boxplot(x=varx, y=vary, data=df2)
-  plt.xlabel(varx, fontsize=14)
-  plt.ylabel(laby, fontsize=14)
-  plt.show()
-  plt.close()
-
-
-
 ### Hard-coded
 #event-age
 df_event_age = df_melt2[['id', 'event', 'age']].drop_duplicates()
@@ -393,17 +305,18 @@ plt.close()
 
 
 ### By function
-make_boxplot(varx='event', vary='age', df=df_melt2)
-make_boxplot(varx='equipment', vary='wilks', df=df_melt2)
-make_boxplot(varx='equipment', lifty='best3_bench', df=df_melt2)
-make_boxplot(varx='federation', lifty='total', df=df_melt2)
-make_boxplot(varx='year', vary='age', df=df_melt2)
+make_boxplot(df=df_melt2, varx='event', vary='age')
+make_boxplot(df=df_melt2, varx='event', vary='age', year=2021)
+make_boxplot(df=df_melt2, varx='equipment', vary='wilks')
+make_boxplot(df=df_melt2, varx='equipment', vary='wilks', year=2022)
+make_boxplot(df=df_melt2, varx='equipment', lifty='best3_bench')
+make_boxplot(df=df_melt2, varx='equipment', lifty='best3_bench', year=2021)
+make_boxplot(df=df_melt2, varx='federation', lifty='total')
+make_boxplot(df=df_melt2, varx='year', vary='age')
 
 
 
 # TO DO:
-#1) Move the custom functions to a separate script and import them into this script
-#2) Modify functions to accept a year filter (with default being no filter for all years)
 #3) Began to build dashboard
   #1. Options
     #Toggle by year: 2021-2024 or all
