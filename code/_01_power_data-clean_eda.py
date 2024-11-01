@@ -51,7 +51,7 @@ df = pd.read_csv('data/openipf_2024-10-12_filtered.csv')
 ## Functions
 root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
 os.chdir(root + 'code')
-from _00_helper_fns import make_barplot_ncomps, make_hist, make_scatter, make_boxplot
+from _00_power_fns import make_barplot_ncomps, make_hist, make_scatter, make_boxplot
 os.chdir(root)
 
 
