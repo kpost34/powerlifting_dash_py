@@ -1,0 +1,151 @@
+---
+title: "Powerlifting Dashboard"
+author: "Keith Post"
+format: dashboard
+server: shiny
+---
+
+```{python setup import}
+#| context: setup
+# %%capture
+
+# Load libraries
+import sys
+import numpy as np
+import pandas as pd
+import inflection
+import re
+import matplotlib.pyplot as plt
+import seaborn as sns
+# import os
+import pickle
+import shiny
+from shiny import reactive
+from shiny.express import render, ui
+
+
+# # Import data
+# root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
+# df = pd.read_pickle(root + 'data/openipf-2024-10-12_filtered_wrangled')
+# 
+# # Source Functions
+# os.chdir(root + 'code')
+# from _00_power_fns import make_barplot_ncomps, make_hist, make_scatter, make_boxplot
+# os.chdir(root)
+
+
+# Import data
+root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
+df = pd.read_pickle(root + 'data/openipf-2024-10-12_filtered_wrangled')
+
+# Manually set the project root directory (you can adjust this based on your folder structure)
+# root = os.path.abspath(os.path.join(os.getcwd()))  # Move up one level to the project root
+
+
+# Add 'code' folder to Python path
+sys.path.append('./code')
+
+# Import functions
+from _00_power_fns import make_hist_shiny, make_scatter_shiny, make_boxplot_shiny
+
+# Import data using absolute path
+# data_file_path = os.path.join(root, 'data', 'openipf-2024-10-12_filtered_wrangled')
+# df = pd.read_pickle(data_file_path)
+```
+
+
+## Column {width=20%}
+
+```{python min}
+#| content: valuebox
+#| title: "Minimum" 
+#| icon: weight
+#| color: primary
+
+@render.text
+def min_text_output():
+  df_lift = df[(df['lift']==exact_lift()) & (df['mass_kg']>0)]
+  min_lift = df_lift['mass_kg'].min() 
+  return str(min_lift) + " kg"
+
+```
+
+
+```{python max}
+#| content: valuebox
+#| title: "Maximum" 
+#| icon: weight
+#| color: primary
+
+@render.text
+def max_text_output():
+  df_lift = df[df['lift']==exact_lift()]
+  max_lift = df_lift['mass_kg'].max() 
+  return str(max_lift) + " kg"
+
+```
+
+
+```{python choose lift}
+
+#select lift
+ui.input_select(id="lift_type", label="Select lift type",
+                choices=["bench", "deadlift", "squat"])
+                
+#select number or best
+ui.input_select(id="lift_num", label="Choose lift number",
+                choices=["1", "2", "3", "best"])
+                
+@reactive.calc
+def exact_lift():
+  if input.lift_num()!="best":
+    str_lift = input.lift_type() + input.lift_num()
+  else:
+    str_lift = "best3_" + input.lift_type()
+  return str_lift
+                
+```
+
+
+## Column {width=30%}
+
+```{python histogram}
+#| title: Histogram of Lift Performances
+  
+@render.plot
+def power_hist():
+  return make_hist_shiny(df, var='mass_kg', lift="best3_bench", col='brown')
+
+```
+
+
+```{python boxplot with equipment}
+#| title: Boxplot of Lift Performances by Equipment
+
+@render.plot
+def power_box_equip():
+  make_boxplot_shiny(df=df, varx='equipment', lifty='best3_bench')
+
+```
+
+
+## Column {width=30%}
+
+```{python scatterplot with age}
+#| title: Scatterplot of Lift Performances by Age
+
+@render.plot
+def power_scatter_age():
+  make_scatter_shiny(df=df, varx='age', lifty='best3_bench')
+
+```
+
+
+```{python scatterplot with wilks}
+#| title: Scatterplot of Lift Performances by Wilks score
+
+@render.plot
+def power_scatter_wilks():
+  make_scatter_shiny(df=df, liftx='best3_bench', vary='wilks', pt_col="darkred", line_col="purple")
+
+```
