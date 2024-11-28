@@ -9,12 +9,9 @@ import re
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-
-
-
 import pickle
 
-
+ 
 
 # Read in Large Data File, Filter, and Re-Save======================================================
 ## Data import
@@ -316,19 +313,9 @@ make_boxplot(df=df_melt2, varx='year', vary='age')
 
 
 
-# TO DO:
-#3) Began to build dashboard
-  #1. Options
-    #Toggle by year: 2021-2024 or all
-    #Toggle by lift: best3_bench, best3_deadlift, best3_squat, and total
-  #2. Top border (2)
-    #Max [lift]: 
-    #Min [lift]:
-  #3. Plots (4)
-    #Upper left: histogram
-    #Upper right: boxplot with equipment
-    #Lower left: scatterplot with age
-    #Lower right: scatterplot with wilks
+# Write Wrangled Data to File=======================================================================
+df_melt2.to_pickle('data/openipf-2024-10-12_filtered_wrangled')
+
 
  
 
