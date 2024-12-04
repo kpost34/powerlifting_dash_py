@@ -6,9 +6,6 @@ format:
   dashboard:
     orientation: columns
 server: shiny
-project:
-  type: website
-  output-dir: docs
 ---
 
 ```{python setup import}
