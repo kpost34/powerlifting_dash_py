@@ -1,13 +1,15 @@
 ---
 title: "Powerlifting Dashboard"
-author: "Keith Post"
-format: dashboard
+subtitle: "(male, tested, sanctioned, IPF, 105 kg weight class, US meets only from 2021-4)"
+author: "**Keith Post**"
+format: 
+  dashboard:
+    orientation: columns
 server: shiny
 ---
 
 ```{python setup import}
 #| context: setup
-# %%capture
 
 # Load libraries
 import sys
@@ -17,44 +19,34 @@ import inflection
 import re
 import matplotlib.pyplot as plt
 import seaborn as sns
-# import os
 import pickle
 import shiny
 from shiny import reactive
 from shiny.express import render, ui
+from shinywidgets import output_widget, render_widget
+import plotly.tools as tls
+import plotly.express as px
 
 
-# # Import data
-# root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
-# df = pd.read_pickle(root + 'data/openipf-2024-10-12_filtered_wrangled')
-# 
-# # Source Functions
-# os.chdir(root + 'code')
-# from _00_power_fns import make_barplot_ncomps, make_hist, make_scatter, make_boxplot
-# os.chdir(root)
-
-
-# Import data
+# Import and wrangle data
 root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
 df = pd.read_pickle(root + 'data/openipf-2024-10-12_filtered_wrangled')
-
-# Manually set the project root directory (you can adjust this based on your folder structure)
-# root = os.path.abspath(os.path.join(os.getcwd()))  # Move up one level to the project root
+#successful lifts only
+df = df[df['mass_kg']>0]
 
 
 # Add 'code' folder to Python path
 sys.path.append('./code')
 
+
+
 # Import functions
 from _00_power_fns import make_hist_shiny, make_scatter_shiny, make_boxplot_shiny
 
-# Import data using absolute path
-# data_file_path = os.path.join(root, 'data', 'openipf-2024-10-12_filtered_wrangled')
-# df = pd.read_pickle(data_file_path)
 ```
 
 
-## Column {width=20%}
+## Column {width=12%}
 
 ```{python min}
 #| content: valuebox
@@ -69,7 +61,6 @@ def min_text_output():
   return str(min_lift) + " kg"
 
 ```
-
 
 ```{python max}
 #| content: valuebox
@@ -86,12 +77,15 @@ def max_text_output():
 ```
 
 
-```{python choose lift}
+```{python ui and reactives}
 
 #select lift
 ui.input_select(id="lift_type", label="Select lift type",
                 choices=["bench", "deadlift", "squat"])
                 
+#add line break
+ui.br()
+
 #select number or best
 ui.input_select(id="lift_num", label="Choose lift number",
                 choices=["1", "2", "3", "best"])
@@ -107,45 +101,52 @@ def exact_lift():
 ```
 
 
-## Column {width=30%}
+## Column {width=44%}
 
 ```{python histogram}
-#| title: Histogram of Lift Performances
+#| title: Histogram of Lift Results
   
-@render.plot
+@render_widget
 def power_hist():
-  return make_hist_shiny(df, var='mass_kg', lift="best3_bench", col='brown')
-
-```
-
-
-```{python boxplot with equipment}
-#| title: Boxplot of Lift Performances by Equipment
-
-@render.plot
-def power_box_equip():
-  make_boxplot_shiny(df=df, varx='equipment', lifty='best3_bench')
-
-```
-
-
-## Column {width=30%}
-
-```{python scatterplot with age}
-#| title: Scatterplot of Lift Performances by Age
-
-@render.plot
-def power_scatter_age():
-  make_scatter_shiny(df=df, varx='age', lifty='best3_bench')
+  plotly_hist_lift = make_hist_shiny(df, var='mass_kg', lift=exact_lift(), col='darkorange')
+  return plotly_hist_lift
 
 ```
 
 
 ```{python scatterplot with wilks}
-#| title: Scatterplot of Lift Performances by Wilks score
+#| title: Wilks Score by Lift Results
 
-@render.plot
+@render_widget
 def power_scatter_wilks():
-  make_scatter_shiny(df=df, liftx='best3_bench', vary='wilks', pt_col="darkred", line_col="purple")
+  plotly_scatter_lift_wilks = make_scatter_shiny(df=df, liftx=exact_lift(), vary='wilks', pt_col="darkred", line_col="purple")
+  return plotly_scatter_lift_wilks
 
 ```
+
+
+## Column {width=44%}
+
+```{python boxplot with equipment}
+#| title: Lift Results by Equipment
+
+@render_widget
+def power_box_equip():
+  plotly_box_lift_equipment = make_boxplot_shiny(df=df, varx='equipment', lifty=exact_lift(),
+                                                 col='darkgreen')
+  return plotly_box_lift_equipment
+
+```
+
+
+```{python scatterplot with age}
+#| title: Lift Results by Age
+
+@render_widget
+def power_scatter_age():
+  plotly_scatter_age_lift = make_scatter_shiny(df=df, varx='age', lifty=exact_lift())
+  return plotly_scatter_age_lift
+
+```
+
+
