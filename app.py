@@ -62,21 +62,39 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
 
     #select lift
     ui.input_select(id="lift_type", label="Select lift type",
-                    choices=["bench", "deadlift", "squat"])
+                    choices=["bench", "deadlift", "squat"],
+                    selected="bench")
                 
     #add line break
     ui.br()
 
     #select number or best
     ui.input_select(id="lift_num", label="Choose lift number",
-                    choices=["1", "2", "3", "best"])
+                    choices=["1", "2", "3", "best"],
+                    selected="best")
                 
     @reactive.calc
     def exact_lift():
-      if input.lift_num()!="best":
-        str_lift = input.lift_type() + input.lift_num()
-      else:
-        str_lift = "best3_" + input.lift_type()
+      shiny.req(input.lift_num())
+      shiny.req(input.lift_type())
+  
+      #handle case where input.lift_num() might be None or empty
+      lift_num = input.lift_num()
+      lift_type = input.lift_type()
+  
+      if not lift_num or not lift_type: #if either is empty/None, return empty string or error msg
+        return "Invalid input"
+  
+      if lift_num != "best":
+        str_lift = lift_type + lift_num
+      elif lift_num == "best":
+        str_lift = "best3_" + lift_type
+  
+      # if input.lift_num()!="best":
+      #   str_lift = lift_type +
+      #   str_lift = input.lift_type() + input.lift_num()
+      # elif input.lift_num()=="best":
+      #   str_lift = "best3_" + input.lift_type()
       return str_lift
 
 
