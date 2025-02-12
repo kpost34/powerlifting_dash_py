@@ -46,7 +46,7 @@ df = pd.read_csv('data/openipf_2024-10-12_filtered.csv')
 
 
 ## Functions
-root = '/Users/keithpost/Documents/Py/Py projs/power_dash_py/'
+root = '/Users/keithpost/Documents/Python/Python projects/power_dash_py/'
 os.chdir(root + 'code')
 from _00_power_fns import make_barplot_ncomps, make_hist, make_scatter, make_boxplot
 os.chdir(root)
