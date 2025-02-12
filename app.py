@@ -24,7 +24,7 @@ import plotly.express as px
 
 
 # Import and wrangle data
-root = '/Users/keithpost/Documents/Python/Python projects/powerlifting_dash_py/'
+root = '/Users/keithpost/Documents/Py/Py projs/power_dash_py/'
 df = pd.read_pickle(root + 'data/openipf-2024-10-12_filtered_wrangled')
 #successful lifts only
 df = df[df['mass_kg']>0]
