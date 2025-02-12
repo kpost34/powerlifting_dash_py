@@ -24,7 +24,7 @@ import plotly.express as px
 
 
 # Import and wrangle data
-root = '/Users/keithpost/Documents/Py/Py projs/power_dash_py/'
+root = '/Users/keithpost/Documents/Python/Python projects/power_dash_py/'
 df = pd.read_pickle(root + 'data/openipf-2024-10-12_filtered_wrangled')
 #successful lifts only
 df = df[df['mass_kg']>0]
@@ -134,7 +134,7 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
     return None
 
 
-_static_assets = ["_02_power_dash_files","_02_power_dash_files/libs/quarto-html/tippy.css","_02_power_dash_files/libs/quarto-html/quarto-syntax-highlighting-29e2c20b02301cfff04dc8050bf30c7e.css","_02_power_dash_files/libs/bootstrap/bootstrap-icons.css","_02_power_dash_files/libs/bootstrap/bootstrap-f8c43d7765872cd89234a313bf24df9c.min.css","_02_power_dash_files/libs/quarto-dashboard/datatables.min.css","_02_power_dash_files/libs/clipboard/clipboard.min.js","_02_power_dash_files/libs/quarto-html/quarto.js","_02_power_dash_files/libs/quarto-html/popper.min.js","_02_power_dash_files/libs/quarto-html/tippy.umd.min.js","_02_power_dash_files/libs/quarto-html/anchor.min.js","_02_power_dash_files/libs/bootstrap/bootstrap.min.js","_02_power_dash_files/libs/quarto-dashboard/quarto-dashboard.js","_02_power_dash_files/libs/quarto-dashboard/stickythead.js","_02_power_dash_files/libs/quarto-dashboard/datatables.min.js","_02_power_dash_files/libs/quarto-dashboard/pdfmake.min.js","_02_power_dash_files/libs/quarto-dashboard/vfs_fonts.js","_02_power_dash_files/libs/quarto-dashboard/web-components.js","_02_power_dash_files/libs/quarto-dashboard/components.js"]
+_static_assets = ["_02_power_dash_files","_02_power_dash_files/libs/quarto-html/tippy.css","_02_power_dash_files/libs/quarto-html/quarto-syntax-highlighting.css","_02_power_dash_files/libs/bootstrap/bootstrap-icons.css","_02_power_dash_files/libs/bootstrap/bootstrap.min.css","_02_power_dash_files/libs/quarto-dashboard/datatables.min.css","_02_power_dash_files/libs/clipboard/clipboard.min.js","_02_power_dash_files/libs/quarto-html/quarto.js","_02_power_dash_files/libs/quarto-html/popper.min.js","_02_power_dash_files/libs/quarto-html/tippy.umd.min.js","_02_power_dash_files/libs/quarto-html/anchor.min.js","_02_power_dash_files/libs/bootstrap/bootstrap.min.js","_02_power_dash_files/libs/quarto-dashboard/quarto-dashboard.js","_02_power_dash_files/libs/quarto-dashboard/stickythead.js","_02_power_dash_files/libs/quarto-dashboard/datatables.min.js","_02_power_dash_files/libs/quarto-dashboard/pdfmake.min.js","_02_power_dash_files/libs/quarto-dashboard/vfs_fonts.js","_02_power_dash_files/libs/quarto-dashboard/web-components.js","_02_power_dash_files/libs/quarto-dashboard/components.js"]
 _static_assets = {"/" + sa: Path(__file__).parent / sa for sa in _static_assets}
 
 app = App(
